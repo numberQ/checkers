@@ -1,7 +1,6 @@
 package com.company;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
@@ -9,7 +8,7 @@ import java.util.concurrent.ForkJoinPool;
 public class Game {
 
 	// Threads to create
-	private final int NUM_THREADS = 1;
+	private int NUM_THREADS;
 
 	private SqState currentPlayer;
 	private Board board;
@@ -23,6 +22,10 @@ public class Game {
 	}
 
 	public void initGame() {
+
+		// Set number of threads
+		System.out.println("How many threads to use? ");
+		NUM_THREADS = scanner.nextInt();
 
 		gameLoop();
 
