@@ -7,7 +7,7 @@ import java.util.concurrent.RecursiveAction;
 public class AITask extends RecursiveAction {
 
 	// Layers of moves the AI will evaluate
-	private final int NUM_AI_ITERS = 5;
+	private final int NUM_AI_ITERS;
 
 	private final Board board;
 	private final SqState player;
@@ -17,10 +17,11 @@ public class AITask extends RecursiveAction {
 
 	private final Random rand = new Random(System.currentTimeMillis());
 
-	public AITask(Board board, SqState player, int iters) {
+	public AITask(Board board, SqState player, int iters, int maxIters) {
 		this.board = board;
 		this.player = player;
 		this.iters = iters;
+		this.NUM_AI_ITERS = maxIters;
 	}
 
 	@Override
@@ -71,7 +72,7 @@ public class AITask extends RecursiveAction {
 			if (iters < NUM_AI_ITERS) {
 
 				// Fork/join task
-				AITask task = new AITask(testBoard, player, iters + 1);
+				AITask task = new AITask(testBoard, player, iters + 1, NUM_AI_ITERS);
 				task.fork();
 				task.join();
 
