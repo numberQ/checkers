@@ -26,6 +26,7 @@ public class Game {
 		// Set number of threads
 		System.out.println("How many threads to use? ");
 		NUM_THREADS = scanner.nextInt();
+		scanner.nextLine();
 
 		gameLoop();
 
@@ -101,10 +102,19 @@ public class Game {
 	private Move compAI(Board b) {
 		Move bestMove;
 
+		// Benchmark start
+		long start, end, result;
+		start = System.currentTimeMillis();
+
 		// Start parallelism
 		ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
 		AITask root = new AITask(b, currentPlayer, 0);
 		pool.invoke(root);
+
+		// Benchmark end
+		end = System.currentTimeMillis();
+		result = end - start;
+		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
 
 		// Select the best move
 		bestMove = root.getMove();
