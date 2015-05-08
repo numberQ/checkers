@@ -58,7 +58,7 @@ public class Game {
 		while (!gameOver) {
 			System.out.println(currentPlayer + "'s turn");
 
-			// Select a piece to move
+			/*// Select a piece to move
 			if (currentPlayer == SqState.BLACK) {
 
 				// The player is black
@@ -71,7 +71,10 @@ public class Game {
 				// Wait for user input
 				System.out.println("Press enter when ready.");
 				scanner.nextLine();
-			}
+			}*/
+
+			// AI competing against itself
+			move = compAI(board);
 
 			// Make the move
 			move.execute(board);
