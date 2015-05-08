@@ -65,12 +65,11 @@ public class Game {
 		end = System.currentTimeMillis();
 		result = end - start;
 		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
-		Main.write(file, "Time taken with " + NUM_THREADS + " thread(s): " + result);
+		Main.write(file, "");
+		Main.write(file, "Total time taken with " + NUM_THREADS + " thread(s): " + result);
 
 		System.out.println("Game over!");
 		System.out.println(currentPlayer.getOpposite() + " won!");
-		Main.write(file, "Game over!");
-		Main.write(file, currentPlayer.getOpposite() + " won!");
 	}
 
 	private void gameLoop() {
@@ -85,20 +84,20 @@ public class Game {
 			System.out.println(currentPlayer + "'s turn");
 			Main.write(file, currentPlayer + "'s turn");
 
-			// Select a piece to move
+			/*// Select a piece to move
 			if (currentPlayer == SqState.BLACK) {
-
 				// The player is black
 				move = userSelectMove();
 			} else {
-
 				// The computer is white
 				move = compAI(board);
-
 				// Wait for user input
 				System.out.println("Press enter when ready.");
 				scanner.nextLine();
-			}
+			}*/
+
+			// AI competing against itself
+			move = compAI(board);
 
 			// Make the move
 			move.execute(board);
@@ -128,6 +127,7 @@ public class Game {
 
 			// Print board
 			move.printMove();
+			Main.write(file, "");
 			board.printBoard();
 		}
 	}
@@ -154,6 +154,7 @@ public class Game {
 		end = System.currentTimeMillis();
 		result = end - start;
 		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
+		Main.write(file, "Time taken with " + NUM_THREADS + " thread(s): " + result);
 
 		// Select the best move
 		bestMove = root.getMove();

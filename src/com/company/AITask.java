@@ -58,6 +58,11 @@ public class AITask extends RecursiveAction {
 		Tuple<Move, Integer> bestMoveContainer;
 		Move move;
 
+		// Dead board - try not to get here
+		if (allMoves.isEmpty()) {
+			return new Tuple<>(null, netScore);
+		}
+
 		// Build list of best moves
 		for (int i = 0; i < allMoves.size(); i++) {
 
