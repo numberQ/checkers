@@ -1,16 +1,19 @@
 package com.company;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Board {
 
 	private int rows, cols;
 	private SqState[][] board;
+	File file;
 
-	public Board(int rows, int cols) {
+	public Board(int rows, int cols, File file) {
 		this.rows = rows;
 		this.cols = cols;
 		this.board = new SqState[rows][cols];
+		this.file = file;
 
 		initBoard();
 	}
@@ -37,7 +40,7 @@ public class Board {
 
 	public Board copyAndMove(Move move) {
 		// Copy the current board over
-		Board tempBoard = new Board(rows, cols);
+		Board tempBoard = new Board(rows, cols, file);
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				tempBoard.setSquare(
@@ -94,19 +97,29 @@ public class Board {
 		board[row][col] = state;
 	}
 
-	public void printBoard() {System.out.print("   ");
+	public void printBoard() {
+		String output;
+
+		System.out.print("   ");
+		output = "   ";
 		for (int k = 0; k < cols; k++) {
 			System.out.print(k + 1 + " ");
+			output += k + 1 + " ";
 		}
 		System.out.println();
+		Main.write(file, output);
 
 		for (int i = 0; i < rows; i++) {
 			System.out.print((char)('a' + i) + " ");
+			output = (char)('a' + i) + " ";
 			for (int j = 0; j < cols; j++) {
 				System.out.print("|");
 				System.out.print(board[i][j].getToken());
+				output += "|" + board[i][j].getToken();
 			}
 			System.out.println("|");
+			output += "|";
+			Main.write(file, output);
 		}
 	}
 

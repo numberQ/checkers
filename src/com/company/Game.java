@@ -1,11 +1,17 @@
 package com.company;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 
 public class Game {
+
+	// For outputting data logs
+	File file;
 
 	// Threads to create
 	private int NUM_THREADS;
@@ -20,9 +26,12 @@ public class Game {
 	private Random rand = new Random(System.currentTimeMillis());
 
 	public Game() {
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+		this.file = new File(timeStamp + ".txt");
+
 		int rows = 8, cols = 8;
 		this.currentPlayer = SqState.BLACK;
-		this.board = new Board(rows, cols);
+		this.board = new Board(rows, cols, file);
 	}
 
 	public void initGame() {
@@ -41,10 +50,27 @@ public class Game {
 		NUM_AI_ITERS = scanner.nextInt();
 		scanner.nextLine();
 
+		// Set up file for data recording
+		Main.write(file, "Thread count: " + NUM_THREADS);
+		Main.write(file, "Search depth: " + NUM_AI_ITERS);
+		Main.write(file, "");
+
+		// Benchmark start
+		long start, end, result;
+		start = System.currentTimeMillis();
+
 		gameLoop();
+
+		// Benchmark end
+		end = System.currentTimeMillis();
+		result = end - start;
+		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
+		Main.write(file, "Time taken with " + NUM_THREADS + " thread(s): " + result);
 
 		System.out.println("Game over!");
 		System.out.println(currentPlayer.getOpposite() + " won!");
+		Main.write(file, "Game over!");
+		Main.write(file, currentPlayer.getOpposite() + " won!");
 	}
 
 	private void gameLoop() {
@@ -57,6 +83,7 @@ public class Game {
 
 		while (!gameOver) {
 			System.out.println(currentPlayer + "'s turn");
+			Main.write(file, currentPlayer + "'s turn");
 
 			// Select a piece to move
 			if (currentPlayer == SqState.BLACK) {

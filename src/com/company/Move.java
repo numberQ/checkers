@@ -17,9 +17,11 @@ public class Move {
 	}
 
 	public void printMove() {
-		System.out.println(player + " moved: (" +
+		String output = player + " moved: (" +
 				(char)(source[0] + 'a') + "," + (char)(source[1] + '1') + ") to (" +
-				(char)(dest[0] + 'a') + "," + (char)(dest[1] + '1') + ")");
+				(char)(dest[0] + 'a') + "," + (char)(dest[1] + '1') + ")";
+		System.out.println(output);
+		Main.write(board.file, output);
 	}
 
 	public boolean isJumping() {
