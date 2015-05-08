@@ -9,6 +9,7 @@ public class Game {
 
 	// Threads to create
 	private int NUM_THREADS;
+	private ForkJoinPool pool;
 
 	// How deep to search
 	private int NUM_AI_ITERS;
@@ -27,9 +28,13 @@ public class Game {
 	public void initGame() {
 
 		// Set number of threads
-		System.out.println("How many threads to use? ");
+		int numProc = Runtime.getRuntime().availableProcessors();
+		System.out.println("How many threads to use? (" + numProc + " available) ");
 		NUM_THREADS = scanner.nextInt();
 		scanner.nextLine();
+
+		// Create thread pool
+		pool = new ForkJoinPool(NUM_THREADS);
 
 		// Set search depth
 		System.out.println("How deep should the AI search? ");
@@ -115,7 +120,6 @@ public class Game {
 		start = System.currentTimeMillis();
 
 		// Start parallelism
-		ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
 		AITask root = new AITask(b, currentPlayer, 0, NUM_AI_ITERS);
 		pool.invoke(root);
 
