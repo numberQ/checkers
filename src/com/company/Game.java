@@ -41,10 +41,20 @@ public class Game {
 		NUM_AI_ITERS = scanner.nextInt();
 		scanner.nextLine();
 
+		// Benchmark start
+		long start, end, result;
+		start = System.currentTimeMillis();
+
 		gameLoop();
 
 		System.out.println("Game over!");
 		System.out.println(currentPlayer.getOpposite() + " won!");
+		System.out.println();
+
+		// Benchmark end
+		end = System.currentTimeMillis();
+		result = end - start;
+		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
 	}
 
 	private void gameLoop() {
@@ -118,18 +128,9 @@ public class Game {
 	private Move compAI(Board b) {
 		Move bestMove;
 
-		// Benchmark start
-		long start, end, result;
-		start = System.currentTimeMillis();
-
 		// Start parallelism
 		AITask root = new AITask(b, currentPlayer, 0, NUM_AI_ITERS);
 		pool.invoke(root);
-
-		// Benchmark end
-		end = System.currentTimeMillis();
-		result = end - start;
-		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
 
 		// Select the best move
 		bestMove = root.getMove();
