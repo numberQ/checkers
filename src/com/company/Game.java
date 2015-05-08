@@ -12,6 +12,7 @@ public class Game {
 
 	// For outputting data logs
 	File file;
+    private final int NUM_REPEATS = 100;
 
 	// Threads to create
 	private int NUM_THREADS;
@@ -97,7 +98,7 @@ public class Game {
 			}*/
 
 			// AI competing against itself
-			move = compAI(board);
+			move = compAI();
 
 			// Make the move
 			move.execute(board);
@@ -136,34 +137,42 @@ public class Game {
 	 * Finds the best move for the current board based on a few heuristics.
 	 * Heuristics are detailed in the Board function 'getScore'.
 	 *
-	 * @param b - The current board.
 	 * @return - The move that leads to the highest point total.
 	 */
-	private Move compAI(Board b) {
-		Move bestMove;
+	private Move compAI() {
+		Move bestMove = null;
 
-		// Benchmark start
-		long start, end, result;
-		start = System.currentTimeMillis();
+        int average = 0;
 
-		// Start parallelism
-		AITask root = new AITask(b, currentPlayer, 0, NUM_AI_ITERS);
-		pool.invoke(root);
+        for (int i = 0; i < NUM_REPEATS; i++) {
+            // Benchmark start
+            long start, end, result;
+            start = System.currentTimeMillis();
 
-		// Benchmark end
-		end = System.currentTimeMillis();
-		result = end - start;
-		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
-		Main.write(file, "Time taken with " + NUM_THREADS + " thread(s): " + result);
+            // Start parallelism
+            AITask root = new AITask(board, currentPlayer, 0, NUM_AI_ITERS);
+            pool.invoke(root);
 
-		// Select the best move
-		bestMove = root.getMove();
+            // Benchmark end
+            end = System.currentTimeMillis();
+            result = end - start;
+            average += result;
+
+            // Select the best move
+            bestMove = root.getMove();
+        }
+
+        average /= NUM_REPEATS;
+
+        System.out.println("Average time taken with " + NUM_THREADS + " thread(s) and " + NUM_REPEATS + " repeat(s): " + average);
+        Main.write(file, "Average time taken with " + NUM_THREADS + " thread(s) and " + NUM_REPEATS + " repeat(s): " + average);
 
 		// It shouldn't return null, but set default behavior just in case
 		if (bestMove == null) {
-			ArrayList<Move> allMoves = b.getLegalMoves(currentPlayer);
-			int r = rand.nextInt(allMoves.size());
-			bestMove = allMoves.get(r);
+			ArrayList<Move> allMoves = board.getLegalMoves(currentPlayer);
+//			int r = rand.nextInt(allMoves.size());
+//			bestMove = allMoves.get(r);
+            bestMove = allMoves.get(0);
 		}
 
 		return bestMove;

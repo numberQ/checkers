@@ -79,7 +79,7 @@ public class AITask extends RecursiveAction {
 				// Fork/join task
 				AITask task = new AITask(testBoard, player, iters + 1, NUM_AI_ITERS);
 				task.fork();
-				task.join();
+                task.join();
 
 				// Add parent's score to this one, to search for highest pointed path
 				currentScore += task.getScore() - iters;
@@ -111,13 +111,15 @@ public class AITask extends RecursiveAction {
 		if (bestMoves.isEmpty()) {
 
 			// Select a random legal move
-			r = rand.nextInt(allMoves.size());
-			move = allMoves.get(r);
+//			r = rand.nextInt(allMoves.size());
+//			move = allMoves.get(r);
+            move = allMoves.get(0);
 		} else {
 
 			// Select a random best move
-			r = rand.nextInt(bestMoves.size());
-			move = bestMoves.get(r);
+//			r = rand.nextInt(bestMoves.size());
+//			move = bestMoves.get(r);
+            move = bestMoves.get(0);
 		}
 
 		// Return that best move along with its score
