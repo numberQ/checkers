@@ -1,40 +1,45 @@
 package com.company;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 
 public class Game {
 
-	// For outputting data logs
-	File file;
-    private final int NUM_REPEATS = 100;
-
-	// Threads to create
+	// Thread vars
 	private int NUM_THREADS;
 	private ForkJoinPool pool;
 
 	// How deep to search
 	private int NUM_AI_ITERS;
 
+    // For benchmarking
+    private  int NUM_REPEATS;
+
+    // Game vars
+    private int mode;
 	private SqState currentPlayer;
 	private Board board;
 	private Scanner scanner = new Scanner(System.in);
 	private Random rand = new Random(System.currentTimeMillis());
 
+    /**
+     * Constructor.
+     * Sets up a default checkers board, 8x8 and black goes first.
+     *
+     */
 	public Game() {
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-		this.file = new File(timeStamp + ".txt");
-
 		int rows = 8, cols = 8;
 		this.currentPlayer = SqState.BLACK;
-		this.board = new Board(rows, cols, file);
+		this.board = new Board(rows, cols);
 	}
 
+    /**
+     * Initializes the game.
+     * Also contains the main game loop, and ends the game.
+     *
+     */
 	public void initGame() {
 
 		// Set number of threads
@@ -51,10 +56,17 @@ public class Game {
 		NUM_AI_ITERS = scanner.nextInt();
 		scanner.nextLine();
 
-		// Set up file for data recording
-		Main.write(file, "Thread count: " + NUM_THREADS);
-		Main.write(file, "Search depth: " + NUM_AI_ITERS);
-		Main.write(file, "");
+        // Set benchmarking repetition
+        System.out.println("How many times should the AI repeat its move search? (Set to 1 if not benchmarking). ");
+        NUM_REPEATS = scanner.nextInt();
+        scanner.nextLine();
+
+        // Player vs computer or computer vs computer?
+        System.out.println("Enter 1 for player vs computer, 2 for computer vs computer. ");
+        mode = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println();
 
 		// Benchmark start
 		long start, end, result;
@@ -66,13 +78,17 @@ public class Game {
 		end = System.currentTimeMillis();
 		result = end - start;
 		System.out.println("Time taken with " + NUM_THREADS + " thread(s): " + result);
-		Main.write(file, "");
-		Main.write(file, "Total time taken with " + NUM_THREADS + " thread(s): " + result);
+        System.out.println();
 
+        // Game over!
 		System.out.println("Game over!");
 		System.out.println(currentPlayer.getOpposite() + " won!");
 	}
 
+    /**
+     * The main game loop.
+     * Handles all things related to turn order, AI, printing the game, and ending the game.
+     */
 	private void gameLoop() {
 		boolean gameOver = false;
 		ArrayList<Move> moves;
@@ -83,22 +99,28 @@ public class Game {
 
 		while (!gameOver) {
 			System.out.println(currentPlayer + "'s turn");
-			Main.write(file, currentPlayer + "'s turn");
 
-			/*// Select a piece to move
-			if (currentPlayer == SqState.BLACK) {
-				// The player is black
-				move = userSelectMove();
-			} else {
-				// The computer is white
-				move = compAI(board);
-				// Wait for user input
-				System.out.println("Press enter when ready.");
-				scanner.nextLine();
-			}*/
+            if (mode == 1) {
+                // Player vs computer
 
-			// AI competing against itself
-			move = compAI();
+                if (currentPlayer == SqState.BLACK) {
+
+                    // The player's turn
+                    move = userSelectMove();
+                } else {
+
+                    // The computer's turn
+                    move = compAI();
+
+                    // Slow down the output, so the player can see the new board state
+                    System.out.println("Press enter when ready.");
+                    scanner.nextLine();
+                }
+            } else {
+                // Computer vs computer
+
+                move = compAI();
+            }
 
 			// Make the move
 			move.execute(board);
@@ -128,7 +150,6 @@ public class Game {
 
 			// Print board
 			move.printMove();
-			Main.write(file, "");
 			board.printBoard();
 		}
 	}
@@ -141,9 +162,9 @@ public class Game {
 	 */
 	private Move compAI() {
 		Move bestMove = null;
-
         int average = 0;
 
+        // Search for best move repeatedly, for benchmarking purposes
         for (int i = 0; i < NUM_REPEATS; i++) {
             // Benchmark start
             long start, end, result;
@@ -165,19 +186,22 @@ public class Game {
         average /= NUM_REPEATS;
 
         System.out.println("Average time taken with " + NUM_THREADS + " thread(s) and " + NUM_REPEATS + " repeat(s): " + average);
-        Main.write(file, "Average time taken with " + NUM_THREADS + " thread(s) and " + NUM_REPEATS + " repeat(s): " + average);
 
 		// It shouldn't return null, but set default behavior just in case
 		if (bestMove == null) {
 			ArrayList<Move> allMoves = board.getLegalMoves(currentPlayer);
-//			int r = rand.nextInt(allMoves.size());
-//			bestMove = allMoves.get(r);
-            bestMove = allMoves.get(0);
+			int r = rand.nextInt(allMoves.size());
+			bestMove = allMoves.get(r);
 		}
 
 		return bestMove;
 	}
 
+    /**
+     * Prompts the user for a move and ensures it's a proper one.
+     *
+     * @return - The move selected by the user.
+     */
 	private Move userSelectMove() {
 		int[] moveSource = new int[2], moveDest = new int[2];
 		String source, dest;
@@ -209,6 +233,7 @@ public class Game {
 			// Create and evaluate the move
 			move = new Move(moveSource, moveDest, board, currentPlayer);
 
+            // Show the board if the move isn't legal
 			if (!move.isLegal(false)) {
 				board.printBoard();
 				System.out.println(currentPlayer + "'s turn");
