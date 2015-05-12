@@ -8,6 +8,14 @@ public class Move {
 	private SqState player;
 	private boolean jumping;
 
+    /**
+     * Constructor.
+     *
+     * @param source - Where the piece originates from.
+     * @param dest - Where the piece is moving.
+     * @param board - On what board the move is happening.
+     * @param player - Who's making the move.
+     */
 	public Move(int[] source, int[] dest, Board board, SqState player) {
 		this.source = source;
 		this.dest = dest;
@@ -16,16 +24,40 @@ public class Move {
 		this.jumping = false;
 	}
 
+    /**
+     * Prints out what this move is.
+     * States the player moving, the source, and the destination.
+     *
+     */
 	public void printMove() {
-		System.out.println(player + " moved: (" +
+		String output = player + " moved: (" +
 				(char)(source[0] + 'a') + "," + (char)(source[1] + '1') + ") to (" +
-				(char)(dest[0] + 'a') + "," + (char)(dest[1] + '1') + ")");
+				(char)(dest[0] + 'a') + "," + (char)(dest[1] + '1') + ")";
+		System.out.println(output);
 	}
 
+    /**
+     * Getter for 'jumping' field.
+     * @return - True if this move is a jump, false if not.
+     */
 	public boolean isJumping() {
 		return jumping;
 	}
 
+    /**
+     * Tests if this move is legal.
+     * A move can fail for 7 reasons:
+     *      - the source isn't valid
+     *      - the source isn't the player's piece
+     *      - the destination isn't valid
+     *      - a normal is trying to move backwards
+     *      - the destination isn't empty
+     *      - the destination is too far from the source
+     *      - the move isn't a jump when one is possible
+     *
+     * @param suppressText - Whether or not to print out failure messages.
+     * @return - True if the move is legal, false if not.
+     */
 	public boolean isLegal(boolean suppressText) {
 		// Make sure source is on the board
 		if (!board.isValidSquare(source[0], source[1])) {
@@ -54,7 +86,7 @@ public class Move {
 			return false;
 		}
 
-		// Make sure a non-king isn't moving backwards
+		// Make sure a normal isn't moving backwards
 		if (!isValidKingMovement()) {
 			if (!suppressText) {
 				System.out.println("Only kings can move backwards!");
@@ -81,7 +113,7 @@ public class Move {
 			return false;
 		}
 
-		// Make sure a jump is take if possible
+		// Make sure a jump is taken if possible
 		if (mustJump() && !isJump()) {
 			if (!suppressText) {
 				System.out.println("You must make a jump if possible!");
@@ -93,8 +125,17 @@ public class Move {
 		return true;
 	}
 
+    /**
+     * Changes the proper squares on the board to make this move happen.
+     * Make the source empty.
+     * Make the destination filled.
+     * Remove a piece if jumping.
+     * King a piece if necessary.
+     *
+     * @param b - The board the move is happening on.
+     */
 	public void execute(Board b) {
-		// Update source as empty and destination as whatever source was
+		// Update source as empty and dest as whatever source was
 		SqState state = b.getSquare(source[0], source[1]);
 		b.setSquare(source[0], source[1], SqState.EMPTY);
 		b.setSquare(dest[0], dest[1], state);
@@ -123,6 +164,11 @@ public class Move {
 		}
 	}
 
+    /**
+     * Checks that, if this move is backwards, the piece is a king.
+     *
+     * @return - True if a backwards move is done by a king, false if not.
+     */
 	private boolean isValidKingMovement() {
 		// Delta row and king checking
 		int d_row = dest[0] - source[0];
@@ -144,6 +190,12 @@ public class Move {
 		return true;
 	}
 
+    /**
+     * Checks if this move is a slide.
+     * A slide only moves one square in any direction.
+     *
+     * @return - True if it's a slide, false if not.
+     */
 	private boolean isSlide() {
 		// Delta row and delta col
 		int d_row = dest[0] - source[0];
@@ -161,6 +213,13 @@ public class Move {
 		return true;
 	}
 
+    /**
+     * Checks if this move is a jump.
+     * A jump moves two squares in any direction,
+     * and moves past an opponent's piece.
+     *
+     * @return - True if it's a jump, false if not.
+     */
 	private boolean isJump() {
 		// Delta row and delta col
 		int d_row = dest[0] - source[0];
@@ -192,6 +251,12 @@ public class Move {
 		return true;
 	}
 
+    /**
+     * Checks to see if a jump is possible for the current player.
+     * The rules of checkers state that a jump must be taken if possible.
+     *
+     * @return - True if there's a jump, false if not.
+     */
 	private boolean mustJump() {
 		Move move;
 		int[] source = new int[2], dest = new int[2];

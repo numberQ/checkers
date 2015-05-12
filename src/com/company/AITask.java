@@ -14,9 +14,16 @@ public class AITask extends RecursiveAction {
 	private final int iters;
 	private int score;
 	private Move move;
-
 	private final Random rand = new Random(System.currentTimeMillis());
 
+    /**
+     * Constructor.
+     *
+     * @param board - The current board being evaluated.
+     * @param player - Whose turn it is.
+     * @param iters - How deep we are.
+     * @param maxIters - How deep we can go.
+     */
 	public AITask(Board board, SqState player, int iters, int maxIters) {
 		this.board = board;
 		this.player = player;
@@ -24,6 +31,12 @@ public class AITask extends RecursiveAction {
 		this.NUM_AI_ITERS = maxIters;
 	}
 
+    /**
+     * The main task function.
+     * Calculates the best move for this board,
+     * then stores that move and its score.
+     *
+     */
 	@Override
 	protected void compute() {
 		Tuple<Move, Integer> bestMoveContainer = compAIWork();
@@ -31,10 +44,20 @@ public class AITask extends RecursiveAction {
 		score = bestMoveContainer.getVal();
 	}
 
+    /**
+     * Getter for 'move' field.
+     *
+     * @return - The best move for this board.
+     */
 	protected Move getMove() {
 		return move;
 	}
 
+    /**
+     * Getter for 'score' field.
+     *
+     * @return - The highest score obtainable from this board.
+     */
 	protected int getScore() {
 		return score;
 	}
@@ -58,6 +81,11 @@ public class AITask extends RecursiveAction {
 		Tuple<Move, Integer> bestMoveContainer;
 		Move move;
 
+		// Dead board - try not to get here
+		if (allMoves.isEmpty()) {
+			return new Tuple<>(null, netScore);
+		}
+
 		// Build list of best moves
 		for (int i = 0; i < allMoves.size(); i++) {
 
@@ -71,12 +99,18 @@ public class AITask extends RecursiveAction {
 			// Recur until we reach the end of a tree
 			if (iters < NUM_AI_ITERS) {
 
-				// Fork/join task
+				// Create a new task with the next board to evaluate
 				AITask task = new AITask(testBoard, player, iters + 1, NUM_AI_ITERS);
 				task.fork();
-				task.join();
+                task.join();
 
-				// Add parent's score to this one, to search for highest pointed path
+                /**
+                 * The score is added to its parents score because
+                 * we want the highest scoring move path.
+                 * The iterations is subtracted from that because,
+                 * in the case of similar board layouts,
+                 * we want to get there as quickly as possible.
+                 */
 				currentScore += task.getScore() - iters;
 
 				// Build list of highest scoring branches
@@ -115,7 +149,7 @@ public class AITask extends RecursiveAction {
 			move = bestMoves.get(r);
 		}
 
-		// Return that best move along with its score
+		// Return the selected move along with its score
 		bestMoveContainer = new Tuple<>(move, netScore);
 		return bestMoveContainer;
 	}

@@ -1,5 +1,6 @@
 package com.company;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Board {
@@ -7,6 +8,12 @@ public class Board {
 	private int rows, cols;
 	private SqState[][] board;
 
+    /**
+     * Constructor.
+     *
+     * @param rows - The height of the board.
+     * @param cols - The width of the baord.
+     */
 	public Board(int rows, int cols) {
 		this.rows = rows;
 		this.cols = cols;
@@ -15,10 +22,17 @@ public class Board {
 		initBoard();
 	}
 
+    /**
+     * Creates a board. Technically should be able to handle variable sized board,
+     * but it's only been tested on 8x8.
+     *
+     */
 	private void initBoard() {
 		SqState state;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
+
+                // Set default to empty
 				state = SqState.EMPTY;
 
 				// Set top rows to black
@@ -35,12 +49,20 @@ public class Board {
 		}
 	}
 
+    /**
+     * Creates a board from the current one with the specified move executed.
+     * This is used by the AI for best move evaluation.
+     *
+     * @param move - The move to take.
+     * @return - The board with the move taken.
+     */
 	public Board copyAndMove(Move move) {
+
 		// Copy the current board over
-		Board tempBoard = new Board(rows, cols);
+		Board testBoard = new Board(rows, cols);
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				tempBoard.setSquare(
+				testBoard.setSquare(
 						i,
 						j,
 						board[i][j]
@@ -49,39 +71,36 @@ public class Board {
 		}
 
 		// Do the potential move
-		move.execute(tempBoard);
+		move.execute(testBoard);
 
-		return tempBoard;
+		return testBoard;
 	}
 
+    /**
+     * Getter for 'rows' field.
+     *
+     * @return - How many rows the board has.
+     */
 	public int getRows() {
 		return rows;
 	}
 
+    /**
+     * Getter for 'cols' field.
+     *
+     * @return - How many cols the board has.
+     */
 	public int getCols() {
 		return cols;
 	}
 
-	public boolean isValidSquare(int row, int col) {
-		// Out of bounds
-		if (row < 0 || row >= rows) {
-			return false;
-		}
-		if (col < 0 || col >= cols) {
-			return false;
-		}
-
-		// Stay on diagonals
-		if (row % 2 == 0 && col % 2 == 0) {
-			return false;
-		}
-		if (row % 2 == 1 && col % 2 == 1) {
-			return false;
-		}
-
-		return true;
-	}
-
+    /**
+     * Finds out what piece is on the given square.
+     *
+     * @param row - The row of the square.
+     * @param col - The col of the square.
+     * @return - What piece is on that square.
+     */
 	public SqState getSquare(int row, int col) {
 		if (!isValidSquare(row, col)) {
 			return SqState.EMPTY;
@@ -90,11 +109,54 @@ public class Board {
 		return board[row][col];
 	}
 
+    /**
+     * Replaces the given squares piece with the given state.
+     *
+     * @param row - The row of the square.
+     * @param col - The col of the square.
+     * @param state - What state to put on it.
+     */
 	public void setSquare(int row, int col, SqState state) {
 		board[row][col] = state;
 	}
 
-	public void printBoard() {System.out.print("   ");
+    /**
+     * Checks if a given square is valid.
+     * Valid does not mean legal!
+     * This only checks if it's on the board and on the right set of diagonals.
+     *
+     * @param row - Which row the square is on.
+     * @param col - Which col the square is on.
+     * @return - True if it's valid, false if not.
+     */
+    public boolean isValidSquare(int row, int col) {
+        // Out of bounds
+        if (row < 0 || row >= rows) {
+            return false;
+        }
+        if (col < 0 || col >= cols) {
+            return false;
+        }
+
+        // Stay on diagonals
+        if (row % 2 == 0 && col % 2 == 0) {
+            return false;
+        }
+        if (row % 2 == 1 && col % 2 == 1) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Prints this board.
+     * Puts a row of col numbers at the top
+     * and a col of row letters on the side.
+     *
+     */
+	public void printBoard() {
+		System.out.print("   ");
 		for (int k = 0; k < cols; k++) {
 			System.out.print(k + 1 + " ");
 		}
@@ -110,6 +172,12 @@ public class Board {
 		}
 	}
 
+    /**
+     * Tests every possible move the given player can make for legality.
+     *
+     * @param player - The player being tested.
+     * @return - A list of legal moves.
+     */
 	public ArrayList<Move> getLegalMoves(SqState player) {
 		ArrayList<Move> moves = new ArrayList<>();
 		Move move;
@@ -148,6 +216,22 @@ public class Board {
 		return moves;
 	}
 
+    /**
+     * Finds the score the given player has on this board.
+     * Each square on the board contributes 1 of 5 values to the player's score:
+     * 4 points - safe kings
+     * 3 points - safe normals
+     * 2 points - unsafe kings
+     * 1 point  - unsafe normals
+     * 0 points - opponent pieces and empty squares
+     * Safeness means that the piece is not in immediate danger of being jumped.
+     *
+     * This can be vastly improved, but it's a workable approach
+     * that can result in some pretty smart moves.
+     *
+     * @param player - The player whose score we're finding.
+     * @return - The score.
+     */
 	public int getScore(SqState player) {
 		int score = 0;
 
@@ -157,14 +241,14 @@ public class Board {
 				if (board[i][j].isSame(player)) {
 
 					// Safe kings worth 4, safe normals worth 3, unsafe kings worth 2, unsafe normals worth 1
-					if (board[i][j].isKinged()) {
-						if (isSafe(i, j)) {
+					if (isSafe(i,j)) {
+						if (board[i][j].isKinged()) {
 							score += 4;
 						} else {
 							score += 3;
 						}
 					} else {
-						if (isSafe(i, j)) {
+						if (board[i][j].isKinged()) {
 							score += 2;
 						} else {
 							score += 1;
@@ -177,6 +261,17 @@ public class Board {
 		return score;
 	}
 
+    /**
+     * Checks if a piece is safe.
+     * No player is necessary, since it gets the player from the color of the piece.
+     * A piece is only unsafe under two conditions:
+     *      - there is an opponent piece adjacent to it
+     *      - the opponent can legally make the jump
+     *
+     * @param row - The row of the piece.
+     * @param col - The col of the piece.
+     * @return - True if the piece is safe, false if not.
+     */
 	private boolean isSafe(int row, int col) {
 		SqState player = board[row][col];
 		int[] source = new int[2], dest = new int[2];
@@ -189,7 +284,7 @@ public class Board {
 				source[0] = row + i;
 				source[1] = col + j;
 
-				// Dest
+				// Dest is opposite the source
 				dest[0] = row - i;
 				dest[1] = col - j;
 
